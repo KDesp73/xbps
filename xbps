@@ -18,6 +18,7 @@ cat << EOF
  /_\_\_.__/ .__/__/    MIT License
           |_|      
 
+A simple, user-friendly wrapper around Void Linux’s xbps package manager.
 Author: Konstantinos Despoinidis <despoinidisk@gmail.com> (KDesp73)
 
 USAGE
