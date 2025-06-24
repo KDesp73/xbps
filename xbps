@@ -1,0 +1,146 @@
+#!/usr/bin/env bash
+
+VERSION="0.2.0"
+LOGFILE="$HOME/.xbps_wrapper.log"
+DRY_RUN=false
+
+# ── Colors ─────────────────────────────────────────────────────
+blue()   { echo -e "\033[1;34m$*\033[0m"; }
+green()  { echo -e "\033[1;32m$*\033[0m"; }
+red()    { echo -e "\033[1;31m$*\033[0m" >&2; }
+
+# ── Help Message ───────────────────────────────────────────────
+usage() {
+cat << EOF
+      _            
+ __ _| |__ _ __ ___    Void Package Manager Wrapper
+ \ \ / '_ \ '_ (_-<    Source: https://github.com/KDesp73/xbps
+ /_\_\_.__/ .__/__/    MIT License
+          |_|      
+
+Author: Konstantinos Despoinidis <despoinidisk@gmail.com> (KDesp73)
+
+USAGE
+  xbps [COMMAND] [PKGS...] [--dry-run]
+
+COMMANDS
+  install, +         Install one or more packages
+  remove, -          Remove one or more packages
+  search, /          Search for packages by name
+  info, i            Show package information
+  upgrade, u         Update system packages
+  list, ls           List installed packages
+  version            Show version
+  help               Show this message
+
+OPTIONS
+  --dry-run          Show what would be executed, but don’t run it
+EOF
+}
+
+# ── Command Logic ──────────────────────────────────────────────
+
+install() {
+    [[ $# -eq 0 ]] && red "No package(s) provided." && exit 1
+    if $DRY_RUN; then
+        green "[dry-run] sudo xbps-install -S $*"
+    else
+        green "Installing: $*"
+        sudo xbps-install -S "$@" && echo "$(date) Installed: $*" >> "$LOGFILE"
+    fi
+}
+
+remove() {
+    [[ $# -eq 0 ]] && red "No package(s) provided." && exit 1
+    if $DRY_RUN; then
+        green "[dry-run] sudo xbps-remove $*"
+    else
+        green "Removing: $*"
+        sudo xbps-remove "$@" && echo "$(date) Removed: $*" >> "$LOGFILE"
+    fi
+}
+
+search() {
+    [[ $# -eq 0 ]] && red "No search term provided." && exit 1
+    xbps-query -Rs "$*"
+}
+
+info() {
+    [[ $# -eq 0 ]] && red "No package name provided." && exit 1
+    xbps-query -R "$1"
+}
+
+upgrade() {
+    if $DRY_RUN; then
+        green "[dry-run] sudo xbps-install -Su"
+    else
+        green "Upgrading system..."
+        sudo xbps-install -Su && echo "$(date) System upgraded" >> "$LOGFILE"
+    fi
+}
+
+list() {
+    xbps-query -l | less
+}
+
+# ── Argument Parsing ───────────────────────────────────────────
+
+COMMAND=""
+ARGS=()
+
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        help)
+            usage
+            exit 0
+            ;;
+        version)
+            echo "$VERSION"
+            exit 0
+            ;;
+        install|+)
+            COMMAND="install"
+            shift
+            ;;
+        remove|-)
+            COMMAND="remove"
+            shift
+            ;;
+        search|/)
+            COMMAND="search"
+            shift
+            ;;
+        info|i)
+            COMMAND="info"
+            shift
+            ;;
+        upgrade|u)
+            COMMAND="upgrade"
+            shift
+            ;;
+        list|ls)
+            COMMAND="list"
+            shift
+            ;;
+        --dry-run)
+            DRY_RUN=true
+            shift
+            ;;
+        *)
+            ARGS+=("$1")
+            shift
+            ;;
+    esac
+done
+
+# ── Dispatch ───────────────────────────────────────────────────
+
+case "$COMMAND" in
+    install) install "${ARGS[@]}" ;;
+    remove)  remove "${ARGS[@]}" ;;
+    search)  search "${ARGS[@]}" ;;
+    info)    info   "${ARGS[@]}" ;;
+    upgrade) upgrade ;;
+    list)    list ;;
+    *)       usage ;;
+esac
