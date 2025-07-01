@@ -44,7 +44,7 @@ EOF
 install() {
     [[ $# -eq 0 ]] && red "No package(s) provided." && exit 1
     if $DRY_RUN; then
-        green "[dry-run] sudo xbps-install -S $*"
+        blue "[dry-run] sudo xbps-install -S $*"
     else
         green "Installing: $*"
         sudo xbps-install -S "$@" && echo "$(date) Installed: $*" >> "$LOGFILE"
@@ -54,7 +54,7 @@ install() {
 remove() {
     [[ $# -eq 0 ]] && red "No package(s) provided." && exit 1
     if $DRY_RUN; then
-        green "[dry-run] sudo xbps-remove $*"
+        blue "[dry-run] sudo xbps-remove $*"
     else
         green "Removing: $*"
         sudo xbps-remove "$@" && echo "$(date) Removed: $*" >> "$LOGFILE"
@@ -73,7 +73,7 @@ info() {
 
 upgrade() {
     if $DRY_RUN; then
-        green "[dry-run] sudo xbps-install -Su"
+        blue "[dry-run] sudo xbps-install -Su"
     else
         green "Upgrading system..."
         sudo xbps-install -Su && echo "$(date) System upgraded" >> "$LOGFILE"
