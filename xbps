@@ -63,12 +63,20 @@ remove() {
 
 search() {
     [[ $# -eq 0 ]] && red "No search term provided." && exit 1
-    xbps-query -Rs "$*"
+    if $DRY_RUN; then
+        blue "[dry-run] xbps-query -Rs $*"
+    else
+        xbps-query -Rs "$*"
+    fi
 }
 
 info() {
     [[ $# -eq 0 ]] && red "No package name provided." && exit 1
-    xbps-query -R "$1"
+    if $DRY_RUN; then
+        blue "[dry-run] xbps-query -R $1"
+    else 
+        xbps-query -R "$1"
+    fi
 }
 
 upgrade() {
@@ -81,7 +89,11 @@ upgrade() {
 }
 
 list() {
-    xbps-query -l | less
+    if $DRY_RUN; then
+        blue "[dry-run] xbps-query -l | less"
+    else 
+        xbps-query -l | less
+    fi
 }
 
 # ── Argument Parsing ───────────────────────────────────────────
